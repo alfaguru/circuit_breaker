@@ -15,4 +15,6 @@ interface StorageInterface {
 
   public function setBroken($state);
 
+  public function lastEventTime();
+
 }

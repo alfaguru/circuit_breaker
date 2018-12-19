@@ -44,7 +44,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
    * @throws
    */
   public function execute(callable $command, $exceptionFilter = NULL) {
-    if ($this->isBroken()) {
+    if ($this->isBroken() && !$this->shouldRetry()) {
       throw new CircuitBrokenException($this->key);
     }
     try {
@@ -74,6 +74,16 @@ class CircuitBreaker implements CircuitBreakerInterface {
     return $this->storage->isBroken();
   }
 
+  protected function shouldRetry() {
+    $time = time();
+    $last_time = $this->storage->lastEventTime();
+    $interval = $time - $last_time;
+    if ($interval >= $this->config['test_retry_min_interval']) {
+      $probability = 100 * ($interval - $this->config['test_retry_min_interval']) / $this->config['test_retry_window_size'];
+      return $probability >= 100? TRUE: $probability >= random_int(0, 100);
+    }
+  }
+
   public function recordSuccess() {
     // TODO: Implement recordSuccess() method.
   }
@@ -88,6 +98,9 @@ class CircuitBreaker implements CircuitBreakerInterface {
    */
   public function recordFailure(\Exception $exception, $exceptionFilter = NULL) {
     $this->storage->addEvent($exception);
+    if ($this->storage->getEventCount() >= $this->config['threshold']) {
+      $this->storage->setBroken(true);
+    }
   }
 
 
