@@ -1,0 +1,4 @@
+name: Circuit breaker
+type: module
+description: 'Implements the circuit breaker pattern for Drupal services'
+core: 8.x

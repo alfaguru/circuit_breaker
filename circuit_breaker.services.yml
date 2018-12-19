@@ -1,0 +1,3 @@
+circuit_breaker:
+  class: Drupal\circuit_breaker\Services\CircuitbreakerFactory
+  arguments: ['@config.factory']

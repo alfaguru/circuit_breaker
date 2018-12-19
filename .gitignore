@@ -1,0 +1,5 @@
+*.phar
+tests/phpunit.xml
+.idea
+vendor
+composer.lock

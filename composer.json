@@ -1,0 +1,24 @@
+{
+  "name": "drupal/circuit_breaker",
+  "description": "Implementation of circuit breaker pattern for Drupal.",
+  "type": "drupal-module",
+  "authors": [
+    {
+      "name": "Alfred Armstrong",
+      "homepage": "https://www.drupal.org/u/alfaguru",
+      "role": "Maintainer"
+    }
+  ],
+  "license": "GPL-2.0-or-later",
+  "minimum-stability": "dev",
+  "require": {
+    "phpunit/phpunit": "7.5.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Drupal\\circuit_breaker\\": "src",
+      "Drupal\\Tests\\circuit_breaker\\": "tests/src"
+    }
+  }
+
+}
