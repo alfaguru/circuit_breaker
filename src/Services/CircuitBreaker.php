@@ -56,7 +56,9 @@ class CircuitBreaker implements CircuitBreakerInterface {
       $this->recordFailure($exception, $exceptionFilter);
       throw $exception;
     }
-
+    finally {
+      $this->storage->persist();
+    }
   }
 
   /**
@@ -79,13 +81,21 @@ class CircuitBreaker implements CircuitBreakerInterface {
     $last_time = $this->storage->lastEventTime();
     $interval = $time - $last_time;
     if ($interval >= $this->config['test_retry_min_interval']) {
-      $probability = 100 * ($interval - $this->config['test_retry_min_interval']) / $this->config['test_retry_window_size'];
-      return $probability >= 100? TRUE: $probability >= random_int(0, 100);
+      /*
+       * Should be an exponential function for best distribution.
+       * But use a quadratic as near enough and easier to compute.
+       */
+      $i = $interval - $this->config['test_retry_min_interval'];
+      $w = $this->config['test_retry_window_size'];
+      $probability = 100 * ($i * $i) / ($w * $w);
+      $random = random_int(0, 99);
+      return $probability >= 100? TRUE: $probability >= $random;
     }
   }
 
   public function recordSuccess() {
-    // TODO: Implement recordSuccess() method.
+    $this->storage->setBroken(false);
+    $this->storage->deleteEvents();
   }
 
   public function handleException(\Exception $exception) {

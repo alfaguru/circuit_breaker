@@ -11,10 +11,14 @@ interface StorageInterface {
 
   public function getEvents();
 
+  public function deleteEvents();
+
   public function isBroken();
 
   public function setBroken($state);
 
   public function lastEventTime();
+
+  public function persist();
 
 }
