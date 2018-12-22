@@ -45,7 +45,7 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(TRUE);
     $storageStub
-      ->method('lastEventTime')
+      ->method('lastFailureTime')
       ->willReturn(time());
 
     $config = [
@@ -71,7 +71,7 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(FALSE);
     $storageStub
-      ->method('getEventCount')
+      ->method('failureCount')
       ->willReturn(5);
     $storageStub
       ->expects($this->once())
@@ -99,7 +99,7 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(TRUE);
     $storageStub
-      ->method('lastEventTime')
+      ->method('lastFailureTime')
       ->willReturn(time() - 8000);
     $storageStub
       ->expects($this->once())
@@ -107,7 +107,7 @@ class CircuitBreakerTest extends TestCase {
       ->with($this->equalTo(FALSE));
     $storageStub
       ->expects($this->once())
-      ->method('deleteEvents');
+      ->method('purgeFailures');
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
@@ -142,7 +142,7 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(TRUE);
     $storageStub
-      ->method('lastEventTime')
+      ->method('lastFailureTime')
       ->will($this->returnCallback([$this, 'intervalFaker'])
       );
     $storageStub
@@ -151,7 +151,7 @@ class CircuitBreakerTest extends TestCase {
       ->with($this->equalTo(FALSE));
     $storageStub
       ->expects($this->once())
-      ->method('deleteEvents');
+      ->method('purgeFailures');
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
@@ -182,11 +182,11 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(FALSE);
     $storageStub
-      ->method('getEventCount')
+      ->method('failureCount')
       ->willReturn(0);
     $storageStub
       ->expects($this->never())
-      ->method('addEvent');
+      ->method('recordFailure');
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
@@ -214,11 +214,11 @@ class CircuitBreakerTest extends TestCase {
       ->method('isBroken')
       ->willReturn(FALSE);
     $storageStub
-      ->method('getEventCount')
+      ->method('failureCount')
       ->willReturn(0);
     $storageStub
       ->expects($this->never())
-      ->method('addEvent');
+      ->method('recordFailure');
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again

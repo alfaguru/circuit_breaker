@@ -79,7 +79,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
 
   protected function shouldRetry() {
     $time = time();
-    $last_time = $this->storage->lastEventTime();
+    $last_time = $this->storage->lastFailureTime();
     $interval = $time - $last_time;
     if ($interval >= $this->config['test_retry_min_interval']) {
       /*
@@ -96,12 +96,12 @@ class CircuitBreaker implements CircuitBreakerInterface {
 
   public function recordSuccess() {
     $this->storage->setBroken(false);
-    $this->storage->deleteEvents();
+    $this->storage->purgeFailures();
   }
 
   public function handleException(\Exception $exception) {
-    $this->storage->addEvent($exception);
-    if ($this->storage->getEventCount() >= $this->config['threshold']) {
+    $this->storage->recordFailure($exception);
+    if ($this->storage->failureCount() >= $this->config['threshold']) {
       $this->storage->setBroken(true);
     }
   }
