@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\circuit_breaker\Services;
+namespace Drupal\circuit_breaker;
 
 
 interface CircuitBreakerInterface {
@@ -10,7 +10,7 @@ interface CircuitBreakerInterface {
    *
    * @param string $key
    * @param array $config
-   * @param \Drupal\circuit_breaker\Services\StorageInterface
+   * @param \Drupal\circuit_breaker\Storage\StorageInterface
    *
    * @return CircuitBreakerInterface
    */

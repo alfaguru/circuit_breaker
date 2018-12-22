@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\circuit_breaker\Unit;
 
-use Drupal\circuit_breaker\Services\CircuitBreaker;
-use Drupal\circuit_breaker\Services\CircuitBrokenException;
-use Drupal\circuit_breaker\Services\StorageInterface;
+use Drupal\circuit_breaker\CircuitBreaker;
+use Drupal\circuit_breaker\Exception\CircuitBrokenException;
+use Drupal\circuit_breaker\Storage\StorageInterface;
 use PHPUnit\Framework\TestCase;
 
 class CircuitBreakerTest extends TestCase {

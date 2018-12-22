@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\circuit_breaker\Services;
+namespace Drupal\circuit_breaker\Storage;
 
 
 interface StorageManagerInterface {
@@ -8,7 +8,7 @@ interface StorageManagerInterface {
   /**
    * @param string $key
    *
-   * @return \Drupal\circuit_breaker\Services\StorageInterface
+   * @return \Drupal\circuit_breaker\Storage\StorageInterface
    */
   function getStorage($key);
 }

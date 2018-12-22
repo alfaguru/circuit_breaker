@@ -1,6 +1,9 @@
 <?php
 
-namespace Drupal\circuit_breaker\Services;
+namespace Drupal\circuit_breaker;
+
+use Drupal\circuit_breaker\Config\ConfigManagerInterface;
+use Drupal\circuit_breaker\Storage\StorageManagerInterface;
 
 /**
  * Factory for circuit breakers.
@@ -12,12 +15,12 @@ namespace Drupal\circuit_breaker\Services;
 class CircuitBreakerFactory implements CircuitBreakerFactoryInterface {
 
   /**
-   * @var \Drupal\circuit_breaker\Services\ConfigManagerInterface
+   * @var \Drupal\circuit_breaker\Config\ConfigManagerInterface
    */
   protected $configManager;
 
   /**
-   * @var \Drupal\circuit_breaker\Services\StorageManagerInterface
+   * @var \Drupal\circuit_breaker\Storage\StorageManagerInterface
    */
   protected $storageManager;
 

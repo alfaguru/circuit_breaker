@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\circuit_breaker\Services;
+namespace Drupal\circuit_breaker;
 
 
 interface CircuitBreakerFactoryInterface {

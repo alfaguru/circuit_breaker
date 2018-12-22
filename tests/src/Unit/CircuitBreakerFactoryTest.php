@@ -2,10 +2,10 @@
 
 namespace Drupal\Tests\circuit_breaker\unit;
 
-use Drupal\circuit_breaker\Services\CircuitBreakerFactory;
-use Drupal\circuit_breaker\Services\CircuitBreakerInterface;
-use Drupal\circuit_breaker\Services\ConfigManagerInterface;
-use Drupal\circuit_breaker\Services\StorageManagerInterface;
+use Drupal\circuit_breaker\CircuitBreakerFactory;
+use Drupal\circuit_breaker\CircuitBreakerInterface;
+use Drupal\circuit_breaker\Config\ConfigManagerInterface;
+use Drupal\circuit_breaker\Storage\StorageManagerInterface;
 
 
 class CircuitBreakerFactoryTest extends \PHPUnit\Framework\TestCase {

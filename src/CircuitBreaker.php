@@ -1,6 +1,8 @@
 <?php
 
-namespace Drupal\circuit_breaker\Services;
+namespace Drupal\circuit_breaker;
+
+use Drupal\circuit_breaker\Exception\CircuitBrokenException;
 
 /**
  * Class CircuitBreakerInstance
@@ -20,7 +22,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
   protected $config;
 
   /**
-   * @var \Drupal\circuit_breaker\Services\StorageInterface
+   * @var \Drupal\circuit_breaker\Storage\StorageInterface
    */
   protected $storage;
 
@@ -29,7 +31,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
    *
    * @param string $key
    * @param array $config
-   * @param \Drupal\circuit_breaker\Services\StorageInterface $storage
+   * @param \Drupal\circuit_breaker\Storage\StorageInterface $storage
    */
   public function __construct($key, array $config, $storage) {
     $this->key = $key;
@@ -65,9 +67,9 @@ class CircuitBreaker implements CircuitBreakerInterface {
   /**
    * @param string $key
    * @param array $config
-   * @param \Drupal\circuit_breaker\Services\StorageInterface $storage
+   * @param \Drupal\circuit_breaker\Storage\StorageInterface $storage
    *
-   * @return \Drupal\circuit_breaker\Services\CircuitBreaker|\Drupal\circuit_breaker\Services\CircuitBreakerInterface
+   * @return \Drupal\circuit_breaker\CircuitBreaker|\Drupal\circuit_breaker\CircuitBreakerInterface
    */
   static function build($key, array $config, $storage) {
     return new CircuitBreaker($key, $config, $storage);
