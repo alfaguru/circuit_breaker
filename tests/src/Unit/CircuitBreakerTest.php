@@ -5,7 +5,6 @@ namespace Drupal\Tests\circuit_breaker\Unit;
 use Drupal\circuit_breaker\Services\CircuitBreaker;
 use Drupal\circuit_breaker\Services\CircuitBrokenException;
 use Drupal\circuit_breaker\Services\StorageInterface;
-use mysql_xdevapi\Exception;
 use PHPUnit\Framework\TestCase;
 
 class CircuitBreakerTest extends TestCase {
@@ -23,9 +22,9 @@ class CircuitBreakerTest extends TestCase {
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
-      $result = $cb->execute(function () {
-        return 'ok';
-      });
+      $result = $cb->execute(function ($arg1, $arg2) {
+        return $arg2;
+      }, ['notok', 'ok'] );
       $this->assertEquals('ok', $result);
     } catch (\Exception $exception) {
       $this->fail('Exception thrown: ' . (string) $exception);
@@ -176,5 +175,82 @@ class CircuitBreakerTest extends TestCase {
 
     echo "On this test run, retried after $minutes minutes\n";
   }
+
+  function testStringExceptionfilter() {
+    $storageStub = $this->createMock(StorageInterface::class);
+    $storageStub
+      ->method('isBroken')
+      ->willReturn(FALSE);
+    $storageStub
+      ->method('getEventCount')
+      ->willReturn(0);
+    $storageStub
+      ->expects($this->never())
+      ->method('addEvent');
+    $config = [
+      'threshold' => 5,
+      'test_retry_min_interval' => 3600, // after an hour will possibly test again
+      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+    ];
+    $cb = new CircuitBreaker('test', $config, $storageStub);
+    try {
+      $cb->execute(function () {
+        throw new NotSeriousException();
+      }, [], 'SomeException ' .NotSeriousException::class . ' AnotherException' );
+      $this->fail('Exception was not thrown');
+    }
+    catch (NotSeriousException $exception) {
+      $this->assertTrue(true);
+    }
+    catch (\Exception $exception) {
+      $this->fail('Wrong exception thrown ' . get_class($exception));
+    }
+
+  }
+
+  function testCallableExceptionFilter() {
+    $storageStub = $this->createMock(StorageInterface::class);
+    $storageStub
+      ->method('isBroken')
+      ->willReturn(FALSE);
+    $storageStub
+      ->method('getEventCount')
+      ->willReturn(0);
+    $storageStub
+      ->expects($this->never())
+      ->method('addEvent');
+    $config = [
+      'threshold' => 5,
+      'test_retry_min_interval' => 3600, // after an hour will possibly test again
+      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+    ];
+    $cb = new CircuitBreaker('test', $config, $storageStub);
+    try {
+      $cb->execute(function () {
+        throw new OtherException();
+      }, [], function($exception) {
+        if (get_class($exception) === NotSeriousException::class) {
+          return '0';
+        }
+        if (get_class($exception) === OtherException::class) {
+          return TRUE;
+        }
+        return NULL;
+      });
+      $this->fail('Exception was not thrown');
+    }
+    catch (OtherException $exception) {
+      $this->assertTrue(true);
+    }
+    catch (\Exception $exception) {
+      $this->fail('Wrong exception thrown ' . get_class($exception));
+    }
+  }
+
+}
+class NotSeriousException extends \Exception {
+
+};
+class OtherException extends NotSeriousException {
 
 }

@@ -17,13 +17,23 @@ interface CircuitBreakerInterface {
   static function build($key, array $config, $storage);
 
   /**
+   * Call the service being monitored by this circuit breaker.
+   *
    * @param callable $command
-   * @param array|callable|null $exceptionFilter
+   *    A function that invokes the service
+   *
+   * @param array $args
+   *    Arguments to be passed to the function
+   *
+   * @param string|callable|null $exceptionFilter
+   *    Defines exceptions that do NOT trigger the breaker.
+   *    - Whitespace separated list of exception (base)classes.
+   *    - A function that takes an exception as argument and returns TRUE for matching exceptions.
    *
    * @return mixed
    * @throws
    */
-  public function execute(callable $command, $exceptionFilter = NULL);
+  public function execute(callable $command, array $args = [], $exceptionFilter = NULL);
 
   /**
    * @param string $key

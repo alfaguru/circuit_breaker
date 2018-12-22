@@ -39,16 +39,17 @@ class CircuitBreaker implements CircuitBreakerInterface {
 
   /**
    * @param callable $command
-   * @param null|array|callable $exceptionFilter
+   * @param array $args
+   * @param null|string|callable $exceptionFilter
    * @return mixed
    * @throws
    */
-  public function execute(callable $command, $exceptionFilter = NULL) {
+  public function execute(callable $command, array $args = [], $exceptionFilter = NULL) {
     if ($this->isBroken() && !$this->shouldRetry()) {
       throw new CircuitBrokenException($this->key);
     }
     try {
-      $return = call_user_func($command);
+      $return = call_user_func_array($command, $args);
       $this->recordSuccess();
       return $return;
     }
@@ -99,18 +100,32 @@ class CircuitBreaker implements CircuitBreakerInterface {
   }
 
   public function handleException(\Exception $exception) {
-    // TODO: Implement handleException() method.
-  }
-
-  /**
-   * @param $exception
-   * @param null|array|callable $exceptionFilter
-   */
-  public function recordFailure(\Exception $exception, $exceptionFilter = NULL) {
     $this->storage->addEvent($exception);
     if ($this->storage->getEventCount() >= $this->config['threshold']) {
       $this->storage->setBroken(true);
     }
+  }
+
+  /**
+   * @param $exception
+   * @param null|string|callable $exceptionFilter
+   */
+  public function recordFailure(\Exception $exception, $exceptionFilter = NULL) {
+    if (is_string($exceptionFilter)) {
+      $definition = $exceptionFilter;
+      $classes = array_filter(preg_split('/\s+/', $definition));
+      foreach ($classes as $class) {
+        if (is_a($exception, $class)) {
+          return;
+        }
+      }
+    }
+    if (is_callable($exceptionFilter)) {
+      if (call_user_func($exceptionFilter, $exception) === TRUE) {
+        return;
+      }
+    }
+    $this->handleException($exception);
   }
 
 
