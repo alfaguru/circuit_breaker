@@ -1,0 +1,19 @@
+circuit_breaker.circuit_breaker_config.*:
+  type: config_entity
+  label: 'Circuit breaker configuration'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    threshold:
+      type: number
+      label: 'Failure threshold'
+    test_retry_min_interval:
+      type: number
+      label: 'Minimum interval for randomised retry'
+    test_retry_max_interval:
+      type: number
+      label: 'Maximum interval for randomised retry'

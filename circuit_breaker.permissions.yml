@@ -1,0 +1,4 @@
+administer circuit breakers:
+  title: 'Administer circuit breaker settings'
+  description: 'Create and manage circuit breaker configurations'
+  restrict access: true

@@ -8,6 +8,11 @@ use Drupal\circuit_breaker\Config\ConfigManagerInterface;
 use Drupal\circuit_breaker\Storage\StorageManagerInterface;
 
 
+/**
+ * Unit tests of the circuit breaker factory class.
+ * 
+ * @group Circuit Breaker
+ */
 class CircuitBreakerFactoryTest extends \PHPUnit\Framework\TestCase {
 
   public function testloadsCircuitBreaker() {

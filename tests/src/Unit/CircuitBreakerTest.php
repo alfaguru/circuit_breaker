@@ -7,6 +7,11 @@ use Drupal\circuit_breaker\Exception\CircuitBrokenException;
 use Drupal\circuit_breaker\Storage\StorageInterface;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Unit tests of the circuit breaker core class.
+ *
+ * @group Circuit Breaker
+ */
 class CircuitBreakerTest extends TestCase {
 
   public function testExecute() {
@@ -18,7 +23,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -51,7 +56,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -80,7 +85,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -111,7 +116,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -155,7 +160,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     for ($i = 0; $i < 100; $i++) {
@@ -190,7 +195,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -222,7 +227,7 @@ class CircuitBreakerTest extends TestCase {
     $config = [
       'threshold' => 5,
       'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_window_size' => 3600, // after a further hour will definitely test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {

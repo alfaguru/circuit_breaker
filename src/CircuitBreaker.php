@@ -89,7 +89,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
        * But use a quadratic as near enough and easier to compute.
        */
       $i = $interval - $this->config['test_retry_min_interval'];
-      $w = $this->config['test_retry_window_size'];
+      $w = $this->config['test_retry_max_interval'] - $this->config['test_retry_min_interval'];
       $probability = 100 * ($i * $i) / ($w * $w);
       $random = random_int(0, 99);
       return $probability >= 100? TRUE: $probability >= $random;

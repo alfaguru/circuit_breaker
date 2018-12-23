@@ -1,0 +1,6 @@
+entity.circuit_breaker_config.add_form:
+  route_name: entity.circuit_breaker_config.add_form
+  title: 'Add a circuit breaker'
+  appears_on:
+    - entity.circuit_breaker_config.collection
+
