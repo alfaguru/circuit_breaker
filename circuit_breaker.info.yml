@@ -1,6 +1,7 @@
-name: Circuit breaker
-type: module
+name: Circuit Breaker
 description: 'Implements the circuit breaker pattern for Drupal services'
+type: module
+package: Circuit Breaker
 core: 8.x
 dependencies:
   - drupal:select_or_other

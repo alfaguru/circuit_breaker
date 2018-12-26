@@ -1,4 +1,19 @@
 services:
-  circuit_breaker:
-    class: Drupal\circuit_breaker\Services\CircuitbreakerFactory
-    arguments: ['@config.factory']
+  circuit_breaker.factory:
+    class: Drupal\circuit_breaker\CircuitBreakerFactory
+    arguments: ['@circuit_breaker.config_manager', '@circuit_breaker.storage_manager']
+
+  circuit_breaker.config_manager:
+    class: Drupal\circuit_breaker\Config\ConfigManager
+    arguments: ['@entity.manager']
+
+  circuit_breaker.storage_manager:
+    class: Drupal\circuit_breaker\Storage\CacheStorageManager
+    arguments: ['@cache.circuit_breaker']
+
+  cache.circuit_breaker:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [circuit_breaker]
