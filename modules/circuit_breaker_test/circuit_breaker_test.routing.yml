@@ -4,3 +4,10 @@ circuit_breaker_test_ok:
     _controller: '\Drupal\circuit_breaker_test\Controller\TestController::pageAlwaysOK'
   requirements:
     _access: 'TRUE'
+
+circuit_breaker_test_fail:
+  path: '/cbtest/fail'
+  defaults:
+    _controller: '\Drupal\circuit_breaker_test\Controller\TestController::pageAlwaysFails'
+  requirements:
+    _access: 'TRUE'

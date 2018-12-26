@@ -2,6 +2,7 @@
 
 namespace Drupal\circuit_breaker\Config;
 
+use Drupal\circuit_breaker\Exception\MissingConfigException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -22,7 +23,10 @@ class ConfigManager implements ConfigManagerInterface {
 
   public function get($key) {
     $config = $this->configStorage->load($key);
-    return $config? $config->toArray(): [];
+    if ($config) {
+      return $config->toArray();
+    }
+    throw new MissingConfigException($key);
   }
 
 }

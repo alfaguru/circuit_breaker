@@ -32,14 +32,25 @@ class TestController extends ControllerBase {
     }, [$data]);
     return [
       '#type' => 'markup',
-      '#markup' => 'Test passed OK. ' . $data,
+      '#markup' => 'Test passed OK. ' . $result,
     ];
   }
 
-  public function pageAlwaysFails() {
+  public function pageAlwaysFails(Request $request) {
+    $results = [];
+    for ($i = 1; $i < 8; $i++) {
+      try {
+        $result = $this->circuitBreaker->execute(function ($data) {
+          throw new \Exception($data);
+        }, ['failure']);
+      }
+      catch (\Exception $exception) {
+        $results[] = "$i Exception ({$exception->getMessage()})";
+      }
+    }
     return [
-      '#type' => 'markup',
-      '#markup' => 'Not implemented yet',
+      '#theme' => 'item_list',
+      '#items' => $results,
     ];
 
   }

@@ -49,14 +49,47 @@ class CircuitBreakerTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Test of CB');
   }
 
+  function configureTest() {
+    $user = $this->drupalCreateUser(['access administration pages', 'administer circuit breakers']);
+    $this->drupalLogin($user);
+    $this->drupalGet('/admin/config/services/circuit_breaker/add');
+    $this->submitForm(
+      [
+        'label' => 'Test of CB',
+        'id' => 'test',
+        'threshold' => 3,
+        'test_retry_min_interval[other]' => 15,
+        'test_retry_max_interval[select]' => 300,
+      ],
+      'Save'
+    );
+  }
+
   /**
    * Test that the passthru to a service is transparent.
    */
   function testPassthru() {
+    $this->configureTest();
     $random = $this->randomString();
     $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
     $this->assertSession()->pageTextContains('Test passed OK');
     $this->assertSession()->pageTextContains($random);
     $this->assertSession()->statusCodeEquals(200);
+  }
+
+  /**
+   * Test that repeated failure causes circuit to break.
+   */
+  function testFailure() {
+    $this->configureTest();
+    $random = $this->randomString();
+    $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random]]);
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->pageTextContainsOnce('1 Exception (failure)');
+    $this->assertSession()->pageTextContainsOnce('2 Exception (failure)');
+    $this->assertSession()->pageTextContainsOnce('3 Exception (failure)');
+    $this->assertSession()->pageTextContainsOnce('4 Exception (Circuit \'test\' is open)');
+    $this->assertSession()->pageTextContainsOnce('5 Exception (Circuit \'test\' is open)');
+
   }
 }
