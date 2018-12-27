@@ -70,7 +70,7 @@ class CircuitBreakerTest extends BrowserTestBase {
    */
   function testPassthru() {
     $this->configureTest();
-    $random = $this->randomString();
+    $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
     $this->assertSession()->pageTextContains('Test passed OK');
     $this->assertSession()->pageTextContains($random);
@@ -82,7 +82,7 @@ class CircuitBreakerTest extends BrowserTestBase {
    */
   function testFailure() {
     $this->configureTest();
-    $random = $this->randomString();
+    $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random]]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContainsOnce('1 Exception (failure)');
@@ -90,6 +90,33 @@ class CircuitBreakerTest extends BrowserTestBase {
     $this->assertSession()->pageTextContainsOnce('3 Exception (failure)');
     $this->assertSession()->pageTextContainsOnce('4 Exception (Circuit \'test\' is open)');
     $this->assertSession()->pageTextContainsOnce('5 Exception (Circuit \'test\' is open)');
-
+    $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
+    $this->assertSession()->pageTextNotContains('Test passed OK');
+    $this->assertSession()->pageTextContains('Test failed');
+    $this->assertSession()->statusCodeEquals(200);
   }
+
+  function testRetry() {
+    $this->configureTest();
+    $random = $this->randomMachineName();
+    $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random]]);
+    $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
+    $this->assertSession()->pageTextContains('Test failed');
+    $this->assertSession()->statusCodeEquals(200);
+    // simulate passage of time
+    $now = time();
+    $interval = 5;
+    for ($i = 0; $i < 20; $i++) {
+      $time = $now - $interval;
+      $interval += 5;
+      $this->drupalGet('/cbtest/time', ['query' => ['time' => $time]]);
+      $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
+      if ($this->getSession()->getPage()->hasContent('Test passed OK')) {
+        break;
+      }
+    }
+    $this->assertGreaterThanOrEqual(15, $interval);
+    $this->assertLessThanOrEqual(300, $interval);
+  }
+
 }

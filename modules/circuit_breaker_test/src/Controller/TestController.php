@@ -3,8 +3,8 @@
 namespace Drupal\circuit_breaker_test\Controller;
 
 
-use Drupal\circuit_breaker\CircuitBreaker;
 use Drupal\circuit_breaker\CircuitBreakerInterface;
+use Drupal\circuit_breaker\Storage\StorageManagerInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,24 +16,42 @@ class TestController extends ControllerBase {
    */
   protected $circuitBreaker;
 
-  public function __construct(CircuitBreakerInterface $circuitBreaker) {
+  /**
+   * @var \Drupal\circuit_breaker\Storage\StorageManagerInterface
+   */
+  protected $storageManager;
+
+  public function __construct(CircuitBreakerInterface $circuitBreaker, StorageManagerInterface $storageManager) {
     $this->circuitBreaker = $circuitBreaker;
+    $this->storageManager = $storageManager;
   }
 
   public static function create(ContainerInterface $container) {
     $circuitBreakerFactory = $container->get('circuit_breaker.factory');
-    return new static($circuitBreakerFactory->load('test'));
+    return new static(
+      $circuitBreakerFactory->load('test'),
+      $container->get('circuit_breaker.storage_manager')
+    );
   }
 
   public function pageAlwaysOK(Request $request ) {
     $data = $request->get('data');
-    $result = $this->circuitBreaker->execute(function ($data) {
-      return $data;
-    }, [$data]);
-    return [
-      '#type' => 'markup',
-      '#markup' => 'Test passed OK. ' . $result,
-    ];
+    try {
+      $result = $this->circuitBreaker->execute(function ($data) {
+        return $data;
+      }, [$data]);
+      return [
+        '#type' => 'markup',
+        '#markup' => 'Test passed OK. ' . $result,
+      ];
+    }
+    catch (\Exception $exception) {
+      return [
+        '#type' => 'markup',
+        '#markup' => 'Test failed. ' . $exception->getMessage(),
+      ];
+
+    }
   }
 
   public function pageAlwaysFails(Request $request) {
@@ -53,6 +71,19 @@ class TestController extends ControllerBase {
       '#items' => $results,
     ];
 
+  }
+
+  public function timeMachine(Request $request) {
+    $timestamp = (int)$request->get('time');
+    if ($timestamp) {
+      $storage = $this->storageManager->getStorage('test');
+      $storage->setlastFailureTime($timestamp);
+      $storage->persist();
+    }
+    return [
+      '#type' => 'markup',
+      '#markup' => 'OK',
+    ];
   }
 
 

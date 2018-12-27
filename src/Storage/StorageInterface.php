@@ -31,6 +31,13 @@ interface StorageInterface {
   public function lastFailureTime();
 
   /**
+   * Timestamp of last recorded event.
+   *
+   * @return int
+   */
+  public function setlastFailureTime($time);
+
+  /**
    * Purge all failure data.
    *
    * @return void

@@ -31,7 +31,7 @@ class CacheStorage implements StorageInterface {
    */
   public function __construct($key, CacheBackendInterface $cacheBackend, $data) {
     $this->key = $key;
-    $this->data = $data? $data: $this->defaultData();
+    $this->data = $data? $data->data: $this->defaultData();
     $this->cacheBackend = $cacheBackend;
   }
 
@@ -54,6 +54,10 @@ class CacheStorage implements StorageInterface {
 
   public function lastFailureTime() {
     return $this->data->lastFailureTime;
+  }
+
+  public function setlastFailureTime($time) {
+    $this->data->lastFailureTime = $time;
   }
 
   public function purgeFailures() {

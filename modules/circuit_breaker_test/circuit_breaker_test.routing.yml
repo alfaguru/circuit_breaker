@@ -11,3 +11,10 @@ circuit_breaker_test_fail:
     _controller: '\Drupal\circuit_breaker_test\Controller\TestController::pageAlwaysFails'
   requirements:
     _access: 'TRUE'
+
+circuit_breaker_test_time:
+  path: '/cbtest/time'
+  defaults:
+    _controller: '\Drupal\circuit_breaker_test\Controller\TestController::timeMachine'
+  requirements:
+    _access: 'TRUE'
