@@ -181,6 +181,46 @@ class CircuitBreakerTest extends TestCase {
     echo "On this test run, retried after $minutes minutes\n";
   }
 
+  function testRetryPrevented() {
+    // run 100 tests and check it never retries
+    $storageStub = $this->createMock(StorageInterface::class);
+    $this->interval = 3000;
+
+    $storageStub
+      ->method('isBroken')
+      ->willReturn(TRUE);
+    $storageStub
+      ->method('lastFailureTime')
+      ->will($this->returnCallback([$this, 'intervalFaker'])
+      );
+    $storageStub
+      ->expects($this->never())
+      ->method('setBroken')
+      ->with($this->equalTo(FALSE));
+    $storageStub
+      ->expects($this->never())
+      ->method('purgeFailures');
+    $config = [
+      'threshold' => 5,
+      'test_retry_min_interval' => 3600, // after an hour will possibly test again
+      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+    ];
+    $cb = new CircuitBreaker('test', $config, $storageStub);
+    $cb->setRetryAllowed(FALSE);
+    for ($i = 0; $i < 100; $i++) {
+      try {
+        $cb->execute(function () {
+          return 'ok';
+        });
+        break;
+      } catch (\Exception $exception) {
+        continue;
+      }
+    }
+    $this->assertEquals(100, $i);
+
+  }
+
   function testStringExceptionfilter() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub

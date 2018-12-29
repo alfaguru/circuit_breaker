@@ -36,6 +36,10 @@ class TestController extends ControllerBase {
 
   public function pageAlwaysOK(Request $request ) {
     $data = $request->get('data');
+    $doNotRetry = $request->get('doNotRetry');
+    if ($doNotRetry) {
+      $this->circuitBreaker->setRetryAllowed(FALSE);
+    }
     try {
       $result = $this->circuitBreaker->execute(function ($data) {
         return $data;
@@ -43,18 +47,24 @@ class TestController extends ControllerBase {
       return [
         '#type' => 'markup',
         '#markup' => 'Test passed OK. ' . $result,
+        '#cache' => ['max-age' => 0,],
       ];
     }
     catch (\Exception $exception) {
       return [
         '#type' => 'markup',
-        '#markup' => 'Test failed. ' . $exception->getMessage(),
+        '#markup' => 'Test failed. ' . $exception->getMessage() . '<br>' .
+          'Time now = ' . time() . '. Last failure time = ' . $this->storageManager->getStorage('test')->lastFailureTime(),
+        '#cache' => ['max-age' => 0,],
       ];
-
     }
   }
 
   public function pageAlwaysFails(Request $request) {
+    $doNotRetry = $request->get('doNotRetry');
+    if ($doNotRetry) {
+      $this->circuitBreaker->setRetryAllowed(FALSE);
+    }
     $results = [];
     for ($i = 1; $i < 8; $i++) {
       try {
@@ -69,12 +79,13 @@ class TestController extends ControllerBase {
     return [
       '#theme' => 'item_list',
       '#items' => $results,
+      '#cache' => ['max-age' => 0,],
     ];
 
   }
 
   public function timeMachine(Request $request) {
-    $timestamp = (int)$request->get('time');
+    $timestamp = $request->get('tval');
     if ($timestamp) {
       $storage = $this->storageManager->getStorage('test');
       $storage->setlastFailureTime($timestamp);
@@ -82,7 +93,8 @@ class TestController extends ControllerBase {
     }
     return [
       '#type' => 'markup',
-      '#markup' => 'OK',
+      '#markup' => "OK set time to $timestamp time now " . time(),
+      '#cache' => ['max-age' => 0,],
     ];
   }
 

@@ -36,8 +36,20 @@ interface CircuitBreakerInterface {
   public function execute(callable $command, array $args = [], $exceptionFilter = NULL);
 
   /**
-   * @param string $key
-   * @param array $options
+   * Can the circuit breaker make a retry in the scope of this request?
+   *
+   * @return bool
+   */
+  public function isRetryAllowed();
+
+  /**
+   * Set whether the circuit breaker can retry or not.
+   *
+   * @param bool $allowed
+   */
+  public function setRetryAllowed($allowed = TRUE);
+
+  /**
    *
    * @return boolean
    */

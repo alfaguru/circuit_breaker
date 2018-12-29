@@ -1,7 +1,7 @@
 name: Circuit Breaker test module
 description: Provides a test implementation of a service integrated with the circuit breaker function.
 type: module
-package: Circuit Breaker
+package: Testing
 core: 8.x
 dependencies:
   - circuit_breaker

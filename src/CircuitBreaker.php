@@ -27,6 +27,11 @@ class CircuitBreaker implements CircuitBreakerInterface {
   protected $storage;
 
   /**
+   * @var bool
+   */
+  protected $retryAllowed = TRUE;
+
+  /**
    * CircuitBreakerInstance constructor.
    *
    * @param string $key
@@ -64,6 +69,15 @@ class CircuitBreaker implements CircuitBreakerInterface {
     }
   }
 
+  public function isRetryAllowed() {
+    return $this->retryAllowed;
+  }
+
+  public function setRetryAllowed($allowed = TRUE) {
+    $this->retryAllowed = $allowed;
+  }
+
+
   /**
    * @param string $key
    * @param array $config
@@ -80,20 +94,26 @@ class CircuitBreaker implements CircuitBreakerInterface {
   }
 
   protected function shouldRetry() {
-    $time = time();
-    $last_time = $this->storage->lastFailureTime();
-    $interval = $time - $last_time;
-    if ($interval >= $this->config['test_retry_min_interval']) {
-      /*
-       * Should be an exponential function for best distribution.
-       * But use a quadratic as near enough and easier to compute.
-       */
-      $i = $interval - $this->config['test_retry_min_interval'];
-      $w = $this->config['test_retry_max_interval'] - $this->config['test_retry_min_interval'];
-      $probability = 100 * ($i * $i) / ($w * $w);
-      $random = random_int(0, 99);
-      return $probability >= 100? TRUE: $probability >= $random;
+    if ($this->retryAllowed) {
+      $time = time();
+      $last_time = $this->storage->lastFailureTime();
+      $interval = $time - $last_time;
+      if ($interval >= $this->config['test_retry_min_interval']) {
+        if ($interval >= $this->config['test_retry_max_interval']) {
+          return TRUE;
+        }
+        /*
+         * Should be an exponential function for best distribution.
+         * But use a quadratic as near enough and easier to compute.
+         */
+        $i = $interval - $this->config['test_retry_min_interval'];
+        $w = $this->config['test_retry_max_interval'] - $this->config['test_retry_min_interval'];
+        $probability = 100 * ($i * $i) / ($w * $w);
+        $random = random_int(0, 99);
+        return $probability >= 100? TRUE: $probability >= $random;
+      }
     }
+    return FALSE;
   }
 
   public function recordSuccess() {

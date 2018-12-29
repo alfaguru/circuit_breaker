@@ -18,7 +18,7 @@ class CircuitBreakerTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['circuit_breaker', 'circuit_breaker_test', ];
+  public static $modules = ['circuit_breaker', 'circuit_breaker_test', 'dblog' ];
 
   protected $profile = 'minimal';
 
@@ -109,7 +109,7 @@ class CircuitBreakerTest extends BrowserTestBase {
     for ($i = 0; $i < 20; $i++) {
       $time = $now - $interval;
       $interval += 5;
-      $this->drupalGet('/cbtest/time', ['query' => ['time' => $time]]);
+      $this->drupalGet('/cbtest/time', ['query' => ['tval' => $time]]);
       $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
       if ($this->getSession()->getPage()->hasContent('Test passed OK')) {
         break;
@@ -117,6 +117,46 @@ class CircuitBreakerTest extends BrowserTestBase {
     }
     $this->assertGreaterThanOrEqual(15, $interval);
     $this->assertLessThanOrEqual(300, $interval);
+  }
+
+  function testRetryOnlyOnCron() {
+    $this->configureTest();
+    $random = $this->randomMachineName();
+    $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
+    $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
+    $this->assertSession()->pageTextContains('Test failed');
+    $this->assertSession()->statusCodeEquals(200);
+    // simulate passage of time
+    $now = time();
+    $interval = 5;
+    for ($i = 0; $i < 20; $i++) {
+      $time = $now - $interval;
+      $interval += 5;
+      $this->drupalGet('/cbtest/time', ['query' => ['tval' => $time]]);
+      $random = $this->randomMachineName();
+      $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
+      if ($this->getSession()->getPage()->hasContent('Test passed OK')) {
+        break;
+      }
+    }
+    $this->assertEquals(20, $i);
+    $this->drupalGet('/cbtest/time', ['query' => ['tval' => time() - 300]]);
+    $key = \Drupal::state()->get('system.cron_key');
+    $this->drupalGet('cron/' . $key);
+    $messages = db_select('watchdog')
+      ->fields('watchdog', ['message'])
+      ->condition('type', 'cbtest')
+      ->execute()
+      ->fetchAll();
+    $this->assertCount(1, $messages);
+    if ($messages) {
+      $this->assertEquals('cron executed ok', $messages[0]->message, $messages[0]->message);
+    }
+    $random = $this->randomMachineName();
+
+    $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
+    $this->assertSession()->pageTextContains('Test passed OK');
+
   }
 
 }

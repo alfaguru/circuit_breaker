@@ -17,7 +17,8 @@ class CacheStorageManager implements StorageManagerInterface {
   }
 
   function getStorage($key) {
-    return new CacheStorage($key, $this->cacheBackend, $this->cacheBackend->get($key));
+    $data = $this->cacheBackend->get($key);
+    return new CacheStorage($key, $this->cacheBackend, $data);
   }
 
 }

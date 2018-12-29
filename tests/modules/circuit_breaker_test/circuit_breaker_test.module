@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_cron().
+ */
+function circuit_breaker_test_cron() {
+  /**
+   * @var $cb \Drupal\circuit_breaker\CircuitBreakerInterface
+   */
+  $cb = Drupal::service('circuit_breaker.factory')->load('test');
+  $cb->setRetryAllowed(TRUE);
+  try {
+    $cb->execute(function () {
+      Drupal::logger('cbtest')->info('cron executed ok');
+      return 'ok';
+    });
+  }
+  catch (Exception $exception) {
+    Drupal::logger('cbtest')->error('exception thrown: ' . $exception->getMessage());
+  }
+}
