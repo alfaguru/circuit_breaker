@@ -14,24 +14,30 @@ use PHPUnit\Framework\TestCase;
  */
 class CircuitBreakerTest extends TestCase {
 
+  /**
+   * Test basic operation.
+   */
   public function testExecute() {
-    // check that storage isBroken is checked
+    // Check that storage isBroken is checked.
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
       ->method('isBroken')
       ->willReturn(FALSE);
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
       $result = $cb->execute(function ($arg1, $arg2) {
         return $arg2;
-      }, ['notok', 'ok'] );
+      }, ['notok', 'ok']);
       $this->assertEquals('ok', $result);
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->fail('Exception thrown: ' . (string) $exception);
     }
     try {
@@ -39,11 +45,16 @@ class CircuitBreakerTest extends TestCase {
         throw new \Exception('failure');
       });
       $this->fail('Exception not thrown, result was ' . var_dump($result));
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->assertEquals($exception->getMessage(), 'failure');
     }
 
   }
+
+  /**
+   * Test a broken circuit.
+   */
   public function testBroken() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
@@ -55,8 +66,10 @@ class CircuitBreakerTest extends TestCase {
 
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -64,12 +77,16 @@ class CircuitBreakerTest extends TestCase {
         return 'ok';
       });
       $this->fail('Exception not thrown, result was ' . var_dump($result));
-    } catch (CircuitBrokenException $exception) {
-      $this->assertTrue(true);
+    }
+    catch (CircuitBrokenException $exception) {
+      $this->assertTrue(TRUE);
     }
 
   }
 
+  /**
+   * Test that a threshold being passed trips the breaker.
+   */
   public function testThresholdTripped() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
@@ -81,11 +98,13 @@ class CircuitBreakerTest extends TestCase {
     $storageStub
       ->expects($this->once())
       ->method('setBroken')
-      ->with($this->equalTo(true));
+      ->with($this->equalTo(TRUE));
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -93,11 +112,15 @@ class CircuitBreakerTest extends TestCase {
         throw new \Exception('failure');
       });
       $this->fail('Exception not thrown, result was ' . var_dump($result));
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->assertEquals($exception->getMessage(), 'failure');
     }
   }
 
+  /**
+   * Test the retry algorithm.
+   */
   public function testCircuitRetry() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
@@ -115,8 +138,10 @@ class CircuitBreakerTest extends TestCase {
       ->method('purgeFailures');
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
@@ -124,22 +149,33 @@ class CircuitBreakerTest extends TestCase {
         return 'ok';
       });
       $this->assertEquals('ok', $result);
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->fail('Exception thrown: ' . (string) $exception);
     }
   }
 
+  /**
+   * The current interval for retry testing.
+   *
+   * @var int
+   */
   protected $interval = 0;
 
-  function intervalFaker() {
+  /**
+   * Function to fake the last failure time.
+   */
+  public function intervalFaker() {
     $return = time() - $this->interval;
     $this->interval += 60;
     return $return;
   }
 
-
-  function testRandomizationOfRetry() {
-    // run 100 tests and check it retries somewhere in the window
+  /**
+   * Test the random retry algorithm.
+   */
+  public function testRandomizationOfRetry() {
+    // Run 100 tests and check it retries somewhere in the window.
     $storageStub = $this->createMock(StorageInterface::class);
     $this->interval = 3000;
 
@@ -159,8 +195,10 @@ class CircuitBreakerTest extends TestCase {
       ->method('purgeFailures');
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     for ($i = 0; $i < 100; $i++) {
@@ -169,7 +207,8 @@ class CircuitBreakerTest extends TestCase {
           return 'ok';
         });
         break;
-      } catch (\Exception $exception) {
+      }
+      catch (\Exception $exception) {
         continue;
       }
     }
@@ -181,8 +220,11 @@ class CircuitBreakerTest extends TestCase {
     echo "On this test run, retried after $minutes minutes\n";
   }
 
-  function testRetryPrevented() {
-    // run 100 tests and check it never retries
+  /**
+   * Test that retry does not occur when disallowed.
+   */
+  public function testRetryPrevented() {
+    // Run 100 tests and check it never retries.
     $storageStub = $this->createMock(StorageInterface::class);
     $this->interval = 3000;
 
@@ -202,8 +244,10 @@ class CircuitBreakerTest extends TestCase {
       ->method('purgeFailures');
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     $cb->setRetryAllowed(FALSE);
@@ -213,7 +257,8 @@ class CircuitBreakerTest extends TestCase {
           return 'ok';
         });
         break;
-      } catch (\Exception $exception) {
+      }
+      catch (\Exception $exception) {
         continue;
       }
     }
@@ -221,7 +266,10 @@ class CircuitBreakerTest extends TestCase {
 
   }
 
-  function testStringExceptionfilter() {
+  /**
+   * Test an exception filter in string format.
+   */
+  public function testStringExceptionfilter() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
       ->method('isBroken')
@@ -234,18 +282,20 @@ class CircuitBreakerTest extends TestCase {
       ->method('recordFailure');
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
       $cb->execute(function () {
         throw new NotSeriousException();
-      }, [], 'SomeException ' .NotSeriousException::class . ' AnotherException' );
+      }, [], 'SomeException ' . NotSeriousException::class . ' AnotherException');
       $this->fail('Exception was not thrown');
     }
     catch (NotSeriousException $exception) {
-      $this->assertTrue(true);
+      $this->assertTrue(TRUE);
     }
     catch (\Exception $exception) {
       $this->fail('Wrong exception thrown ' . get_class($exception));
@@ -253,7 +303,10 @@ class CircuitBreakerTest extends TestCase {
 
   }
 
-  function testCallableExceptionFilter() {
+  /**
+   * Test an exception filter in callable format.
+   */
+  public function testCallableExceptionFilter() {
     $storageStub = $this->createMock(StorageInterface::class);
     $storageStub
       ->method('isBroken')
@@ -266,14 +319,16 @@ class CircuitBreakerTest extends TestCase {
       ->method('recordFailure');
     $config = [
       'threshold' => 5,
-      'test_retry_min_interval' => 3600, // after an hour will possibly test again
-      'test_retry_max_interval' => 7200, // after a further hour will definitely test again
+      // After an hour will possibly test again.
+      'test_retry_min_interval' => 3600,
+      // After a further hour will definitely test again.
+      'test_retry_max_interval' => 7200,
     ];
     $cb = new CircuitBreaker('test', $config, $storageStub);
     try {
       $cb->execute(function () {
         throw new OtherException();
-      }, [], function($exception) {
+      }, [], function ($exception) {
         if (get_class($exception) === NotSeriousException::class) {
           return '0';
         }
@@ -285,7 +340,7 @@ class CircuitBreakerTest extends TestCase {
       $this->fail('Exception was not thrown');
     }
     catch (OtherException $exception) {
-      $this->assertTrue(true);
+      $this->assertTrue(TRUE);
     }
     catch (\Exception $exception) {
       $this->fail('Wrong exception thrown ' . get_class($exception));
@@ -293,9 +348,17 @@ class CircuitBreakerTest extends TestCase {
   }
 
 }
+
+/**
+ * An exception that is filtered.
+ */
 class NotSeriousException extends \Exception {
 
-};
+}
+
+/**
+ * Another exception that is filtered.
+ */
 class OtherException extends NotSeriousException {
 
 }

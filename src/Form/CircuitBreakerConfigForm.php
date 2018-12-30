@@ -41,7 +41,7 @@ class CircuitBreakerConfigForm extends EntityForm {
       '#title' => $this->t('Failure threshold'),
       '#description' => $this->t('Number of failures before the breaker trips.'),
       '#default_value' => $circuit_breaker_config->threshold(),
-      '#required' => TRUE
+      '#required' => TRUE,
     ];
 
     $form['retry'] = [
@@ -66,7 +66,7 @@ class CircuitBreakerConfigForm extends EntityForm {
       43200 => $this->t('After 12 hours'),
       86400 => $this->t('After 1 day'),
     ];
-    $default = (int)$circuit_breaker_config->testRetryMinInterval();
+    $default = (int) $circuit_breaker_config->testRetryMinInterval();
     if (!isset($options[$default])) {
       $options[$default] = $this->t('@i seconds', ['@i' => $default]);
     }
@@ -92,7 +92,7 @@ class CircuitBreakerConfigForm extends EntityForm {
       43200 => $this->t('After 12 hours'),
       86400 => $this->t('After 1 day'),
     ];
-    $default = (int)$circuit_breaker_config->testRetryMaxInterval();
+    $default = (int) $circuit_breaker_config->testRetryMaxInterval();
     if (!isset($options[$default])) {
       $options[$default] = $this->t('@i seconds', ['@i' => $default]);
     }
@@ -107,6 +107,9 @@ class CircuitBreakerConfigForm extends EntityForm {
     return $form;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\Tests\circuit_breaker\Functional;
 
 use Drupal\Tests\BrowserTestBase;
@@ -18,14 +17,14 @@ class CircuitBreakerTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['circuit_breaker', 'circuit_breaker_test', 'dblog' ];
+  public static $modules = ['circuit_breaker', 'circuit_breaker_test', 'dblog'];
 
   protected $profile = 'minimal';
 
   /**
    * Test basic functionality of the configuration interface.
    */
-  function testCanConfigure() {
+  public function testCanConfigure() {
     $user = $this->drupalCreateUser(['access administration pages', 'administer circuit breakers']);
     $this->drupalLogin($user);
     $this->drupalGet('/admin/config/services/circuit_breaker');
@@ -49,7 +48,10 @@ class CircuitBreakerTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Test of CB');
   }
 
-  function configureTest() {
+  /**
+   *
+   */
+  public function configureTest() {
     $user = $this->drupalCreateUser(['access administration pages', 'administer circuit breakers']);
     $this->drupalLogin($user);
     $this->drupalGet('/admin/config/services/circuit_breaker/add');
@@ -68,7 +70,7 @@ class CircuitBreakerTest extends BrowserTestBase {
   /**
    * Test that the passthru to a service is transparent.
    */
-  function testPassthru() {
+  public function testPassthru() {
     $this->configureTest();
     $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
@@ -80,7 +82,7 @@ class CircuitBreakerTest extends BrowserTestBase {
   /**
    * Test that repeated failure causes circuit to break.
    */
-  function testFailure() {
+  public function testFailure() {
     $this->configureTest();
     $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random]]);
@@ -96,14 +98,17 @@ class CircuitBreakerTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(200);
   }
 
-  function testRetry() {
+  /**
+   *
+   */
+  public function testRetry() {
     $this->configureTest();
     $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random]]);
     $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random]]);
     $this->assertSession()->pageTextContains('Test failed');
     $this->assertSession()->statusCodeEquals(200);
-    // simulate passage of time
+    // Simulate passage of time.
     $now = time();
     $interval = 5;
     for ($i = 0; $i < 20; $i++) {
@@ -119,14 +124,17 @@ class CircuitBreakerTest extends BrowserTestBase {
     $this->assertLessThanOrEqual(300, $interval);
   }
 
-  function testRetryOnlyOnCron() {
+  /**
+   *
+   */
+  public function testRetryOnlyOnCron() {
     $this->configureTest();
     $random = $this->randomMachineName();
     $this->drupalGet('/cbtest/fail', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
     $this->drupalGet('/cbtest/ok', ['query' => ['data' => $random, 'doNotRetry' => 1]]);
     $this->assertSession()->pageTextContains('Test failed');
     $this->assertSession()->statusCodeEquals(200);
-    // simulate passage of time
+    // Simulate passage of time.
     $now = time();
     $interval = 5;
     for ($i = 0; $i < 20; $i++) {

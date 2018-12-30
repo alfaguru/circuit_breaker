@@ -1,7 +1,7 @@
 circuit_breaker_test_ok:
   path: '/cbtest/ok'
   defaults:
-    _controller: '\Drupal\circuit_breaker_test\Controller\TestController::pageAlwaysOK'
+    _controller: '\Drupal\circuit_breaker_test\Controller\TestController::pageAlwaysOk'
   requirements:
     _access: 'TRUE'
 

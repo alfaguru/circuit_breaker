@@ -56,16 +56,22 @@ class CircuitBreakerConfig extends ConfigEntityBase implements CircuitBreakerCon
   protected $label;
 
   /**
+   * Number of failures before breaker trips.
+   *
    * @var int
    */
   protected $threshold = 5;
 
   /**
+   * Number of seconds since last failure before a retry may be attempted.
+   *
    * @var int
    */
   protected $test_retry_min_interval = 60;
 
   /**
+   * Number of seconds since last failure before a retry will be attempted.
+   *
    * @var int
    */
   protected $test_retry_max_interval = 300;
@@ -74,20 +80,27 @@ class CircuitBreakerConfig extends ConfigEntityBase implements CircuitBreakerCon
    * The failure threshold.
    *
    * @return int
+   *   Number of failures before breaker trips.
    */
   public function threshold() {
     return $this->threshold;
   }
 
   /**
+   * Get the interval lower limit for a randomized retry.
+   *
    * @return int
+   *   Number of seconds since last failure before a retry may be attempted.
    */
   public function testRetryMinInterval() {
     return $this->test_retry_min_interval;
   }
 
   /**
+   * Get the interval upper limit for a randomized retry.
+   *
    * @return int
+   *   Number of seconds since last failure before a retry will be attempted.
    */
   public function testRetryMaxInterval() {
     return $this->test_retry_max_interval;

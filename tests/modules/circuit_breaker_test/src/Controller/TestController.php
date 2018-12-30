@@ -2,13 +2,15 @@
 
 namespace Drupal\circuit_breaker_test\Controller;
 
-
 use Drupal\circuit_breaker\CircuitBreakerInterface;
 use Drupal\circuit_breaker\Storage\StorageManagerInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ *
+ */
 class TestController extends ControllerBase {
 
   /**
@@ -21,11 +23,17 @@ class TestController extends ControllerBase {
    */
   protected $storageManager;
 
+  /**
+   *
+   */
   public function __construct(CircuitBreakerInterface $circuitBreaker, StorageManagerInterface $storageManager) {
     $this->circuitBreaker = $circuitBreaker;
     $this->storageManager = $storageManager;
   }
 
+  /**
+   *
+   */
   public static function create(ContainerInterface $container) {
     $circuitBreakerFactory = $container->get('circuit_breaker.factory');
     return new static(
@@ -34,7 +42,10 @@ class TestController extends ControllerBase {
     );
   }
 
-  public function pageAlwaysOK(Request $request ) {
+  /**
+   *
+   */
+  public function pageAlwaysOk(Request $request) {
     $data = $request->get('data');
     $doNotRetry = $request->get('doNotRetry');
     if ($doNotRetry) {
@@ -47,19 +58,22 @@ class TestController extends ControllerBase {
       return [
         '#type' => 'markup',
         '#markup' => 'Test passed OK. ' . $result,
-        '#cache' => ['max-age' => 0,],
+        '#cache' => ['max-age' => 0],
       ];
     }
     catch (\Exception $exception) {
       return [
         '#type' => 'markup',
         '#markup' => 'Test failed. ' . $exception->getMessage() . '<br>' .
-          'Time now = ' . time() . '. Last failure time = ' . $this->storageManager->getStorage('test')->lastFailureTime(),
-        '#cache' => ['max-age' => 0,],
+        'Time now = ' . time() . '. Last failure time = ' . $this->storageManager->getStorage('test')->lastFailureTime(),
+        '#cache' => ['max-age' => 0],
       ];
     }
   }
 
+  /**
+   *
+   */
   public function pageAlwaysFails(Request $request) {
     $doNotRetry = $request->get('doNotRetry');
     if ($doNotRetry) {
@@ -79,11 +93,14 @@ class TestController extends ControllerBase {
     return [
       '#theme' => 'item_list',
       '#items' => $results,
-      '#cache' => ['max-age' => 0,],
+      '#cache' => ['max-age' => 0],
     ];
 
   }
 
+  /**
+   *
+   */
   public function timeMachine(Request $request) {
     $timestamp = $request->get('tval');
     if ($timestamp) {
@@ -94,9 +111,8 @@ class TestController extends ControllerBase {
     return [
       '#type' => 'markup',
       '#markup' => "OK set time to $timestamp time now " . time(),
-      '#cache' => ['max-age' => 0,],
+      '#cache' => ['max-age' => 0],
     ];
   }
-
 
 }

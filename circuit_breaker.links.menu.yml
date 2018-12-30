@@ -3,4 +3,3 @@ entity.circuit_breaker_config.collection:
   route_name: entity.circuit_breaker_config.collection
   description: 'Manage circuit breaker configuration.'
   parent: system.admin_config_services
-

@@ -2,17 +2,19 @@
 
 namespace Drupal\circuit_breaker\Storage;
 
-
+/**
+ * Persistent storage for a circuit breaker.
+ */
 interface StorageInterface {
 
   /**
    * Record a failure event (typically an exception).
+   *
    * The storage implementation must store the time of the
    * event and keep a counter. It may also log it.
    *
    * @param object $object
-   *
-   * @return void
+   *   The failure event.
    */
   public function recordFailure($object);
 
@@ -20,6 +22,7 @@ interface StorageInterface {
    * Get the number of failures currently recorded.
    *
    * @return int
+   *   The number of failures.
    */
   public function failureCount();
 
@@ -27,20 +30,20 @@ interface StorageInterface {
    * Timestamp of last recorded event.
    *
    * @return int
+   *   Last failure time in seconds since epoch.
    */
   public function lastFailureTime();
 
   /**
-   * Timestamp of last recorded event.
+   * Set the timestamp of last recorded event.
    *
-   * @return int
+   * @param int $time
+   *   The time in seconds since epoch.
    */
   public function setlastFailureTime($time);
 
   /**
    * Purge all failure data.
-   *
-   * @return void
    */
   public function purgeFailures();
 
@@ -48,6 +51,7 @@ interface StorageInterface {
    * Is the circuit broken?
    *
    * @return bool
+   *   The current state of the circuit.
    */
   public function isBroken();
 
@@ -55,15 +59,12 @@ interface StorageInterface {
    * Set the state of the circuit.
    *
    * @param bool $state
-   *
-   * @return void
+   *   The new state value.
    */
   public function setBroken($state);
 
   /**
    * Save all changes to the persistent store.
-   *
-   * @return void
    */
   public function persist();
 
