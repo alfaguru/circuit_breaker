@@ -9,8 +9,9 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *
  * @ConfigEntityType(
  *   id = "circuit_breaker_config",
- *   label = @Translation("circuit breaker"),
- *   label_plural = @Translation("circuit breakers"),
+ *   label = @Translation("Circuit breaker"),
+ *   label_plural = @Translation("Circuit breakers"),
+ *   label_collection = @Translation("Circuit breakers"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\circuit_breaker\CircuitBreakerConfigListBuilder",
